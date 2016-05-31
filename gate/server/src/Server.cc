@@ -94,19 +94,21 @@ int Server::Run(void)
             {
                 if (FD_ISSET(it->first, &m_Set))
                     ret = RecvClient(it);
-                
+
                 /// delete this client from map
                 if( -1 == ret )
                 {
-                    WLOG<< "0x" << hex << (int)it->second->flag << " out";
+                    WLOG << "0x" << hex << (int)it->second->flag << " out";
                     FD_CLR(it->first, &m_Set);
+                    delete it->second;
                     m_ClientMap.erase(it++);
                     continue;
                 }
                 ++it;
             }
         }
-    }while(1);
+    }
+    while(1);
 
     m_RunFlag = false;
     return 0;
@@ -137,9 +139,10 @@ void Server::SetupFDSet(void)
     /// add all client fd
     for(ClientIter it = m_ClientMap.begin(); it != m_ClientMap.end();)
     {
-        if(m_OverTime < (int)difftime(time(0),it->second->lastTime))
+        if(m_OverTime < (int)difftime(time(0), it->second->lastTime))
         {
-            WLOG<< "Client fd " << it->first << " time out "<<m_OverTime<<"s and deldte now";
+            WLOG << "Client fd " << it->first << " time out " << m_OverTime << "s and delete now";
+            delete it->second;
             m_ClientMap.erase(it++);
             continue;
         }
@@ -175,41 +178,41 @@ int Server::RecvClient(ClientIter it)
     {
         /// handle recv data
         byte_num = byte_num < BUFFER_SIZE ? byte_num : BUFFER_SIZE;
-        ILOG<<"Receive " << byte_num << " bytes from fd " << it->first;
+        ILOG << "Receive " << byte_num << " bytes from fd " << it->first;
         time(&(it->second->lastTime));
         ret = DataPprocess(byte_num, it);
     }
     else if(byte_num < 0)
     {
-        PLOG(ERROR)<<"Receive error from fd " << it->first;
+        PLOG(ERROR) << "Receive error from fd " << it->first;
         ret = 0;
     }
     else
     {
-        WLOG<<"Client fd "<< it->first <<" exit";
+        WLOG << "Client fd " << it->first << " exit";
         ret = -1;
     }
     return ret;
 }
 
-int Server::DataPprocess(int DataLen,ClientIter it)
+int Server::DataPprocess(int DataLen, ClientIter it)
 {
-    DataType_S* data = (DataType_S*)m_RecvBuf;
-    
+    DataType_S *data = (DataType_S *)m_RecvBuf;
+
     if(it->second->flag == 0)
     {
         if(data->src_id == data->dest_id)
         {
             if(0 != GetClientFd(data->src_id))
             {
-                WLOG<<"Get repeat client flag 0x" << hex << (int)data->src_id <<",delete this client now.";
+                WLOG << "Get repeat client flag 0x" << hex << (int)data->src_id << ",delete this client now.";
                 return -1;
             }
             else
             {
                 it->second->flag = data->src_id;
                 ILOG << "First recognition bag from 0x" << hex << (int)data->src_id;
-                return WriteTo(it->first,m_RecvBuf,DataLen);
+                return WriteTo(it->first, m_RecvBuf, DataLen);
             }
         }
     }
@@ -218,23 +221,23 @@ int Server::DataPprocess(int DataLen,ClientIter it)
         if(data->src_id == data->dest_id)
         {
             ILOG << "Recognition bag from 0x" << hex << (int)data->src_id;
-            return WriteTo(it->first,m_RecvBuf,DataLen);
+            return WriteTo(it->first, m_RecvBuf, DataLen);
         }
         else
         {
             ILOG << "Recv data from 0x" << hex << (int)data->src_id << "to 0x" << hex << (int)data->dest_id;
-            return WriteTo(GetClientFd(data->dest_id),m_RecvBuf,DataLen);
+            return WriteTo(GetClientFd(data->dest_id), m_RecvBuf, DataLen);
         }
     }
     return 0;
 }
 
-int Server::WriteTo(int fd, char* data, int len)
+int Server::WriteTo(int fd, char *data, int len)
 {
     int ret = send(fd, data, len, 0);
     if (-1 == ret )
     {
-        PLOG(WARNING)<<"send to fd("<<fd<<") error";
+        PLOG(WARNING) << "send to fd(" << fd << ") error";
         return 0;
     }
     return ret;
