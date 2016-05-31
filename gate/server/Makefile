@@ -27,10 +27,6 @@ CPP=$(ARCH)g++
 AR=$(ARCH)ar
 STRIP=$(ARCH)strip
 
-STATIC_LIB=libcommon.a
-SHARE_LIB=libcommon.so
-INSTALL_PATH ?= .
-
 ifeq ($(DEBUG),ON)
 CFLAGS += -DDEBUG
 endif
@@ -60,9 +56,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 
 $(COM_OBJ_DIR)/%.o: $(COM_SRC_DIR)/%.cc
 	$(CPP) $(CFLAGS) -c $< -o $@
-	
+
 clean:
-	@echo $(shell pwd)
-	@echo $(CURRENT_PATH)
-	@echo $(TARGET)
 	-rm -f $(OBJS) $(COM_OBJS) $(TARGET)

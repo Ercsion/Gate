@@ -1,6 +1,5 @@
 #include "Common.h"
-#include "Version.h"
-#include "Gate.h"
+#include "Server.h"
 
 
 void printGateVer(void)
@@ -15,9 +14,11 @@ void init(void)
 	static GLogHelper glog((char*)PROJECT_NAME);
 	printGateVer();
 }
+
 int main(int argc,char*argv[])
 {
+	using namespace std;
 	init();
-	Gate main_gate((char*)GATE_SOCKET_PATH,sizeof(GATE_SOCKET_PATH));
-	main_gate.run();
+	Server gate;
+	gate.Run();
 }
