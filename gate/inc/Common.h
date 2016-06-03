@@ -1,5 +1,5 @@
-#ifndef __GLOBAL_H__
-#define __GLOBAL_H__
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #include <stdio.h>
 #include <string.h>
@@ -34,20 +34,21 @@
 #include <map>
 #include <algorithm>
 
-#include "glog/logging.h"
-#include "glog/log_severity.h"
-#include "glog/raw_logging.h"
-#include "glog/stl_logging.h"
-#include "glog/vlog_is_on.h"
-#include "GLogHelper.h"
-#include "ColorHelper.h"
-
+#ifdef PC
 #define GATE_SOCKET_PATH "gate_sock"
+#else
+#define GATE_SOCKET_PATH "/root/gate_sock"
+#endif
 
-typedef struct dataHeadType
+#define HEAD_LEN  4
+
+typedef struct DataType
 {
-    char dest_id;  //目标地址
-    char src_id;   //源地址
-} __attribute__ ((__packed__))dataHeadType_S;
+    char head[HEAD_LEN];
+    char len_h;
+    char len_l;
+    char dest_id;  //to
+    char src_id;   //from
+} __attribute__ ((__packed__))DataType_S;
 
-#endif /* __GLOBAL_H__ */
+#endif /* __COMMON_H__ */

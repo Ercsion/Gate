@@ -1,7 +1,13 @@
 #include "Server.h"
+#include "GLogHelper.h"
+
 using namespace std;
+
+//static GLogHelper glog((char *)PROJECT_NAME);
+    
 Server::Server()
 {
+    PrintVer();
     Init();
 }
 
@@ -58,6 +64,13 @@ bool Server::Init(void)
     return true;
 }
 
+void Server::PrintVer(void)
+{
+    ILOG << PROJECT_NAME << " start.";
+    ILOG << "     Programe Version V" << PROGRAM_VERSION;
+    ILOG << "Attention : this version is new gate";
+}
+
 int Server::Run(void)
 {
     m_RunFlag = true;
@@ -67,8 +80,8 @@ int Server::Run(void)
 
     do
     {
-        tv.tv_sec = 1;
-        tv.tv_usec = 1000;
+        tv.tv_sec = 0;
+        tv.tv_usec = 300;
 
         /// setup server and clients fd
         SetupFDSet();
@@ -98,7 +111,7 @@ int Server::Run(void)
                 /// delete this client from map
                 if( -1 == ret )
                 {
-                    WLOG << "0x" << hex << (int)it->second->flag << " out";
+                    WLOG << "delete client 0x" << hex << (int)it->second->flag;
                     FD_CLR(it->first, &m_Set);
                     delete it->second;
                     m_ClientMap.erase(it++);
@@ -143,10 +156,11 @@ void Server::SetupFDSet(void)
         {
             WLOG << "Client fd " << it->first << " time out " << m_OverTime << "s and delete now";
             delete it->second;
+            it->second = NULL;
             m_ClientMap.erase(it++);
             continue;
         }
-        ILOG << "add " << it->first << " to SET";
+        //ILOG << "add " << it->first << " to SET";
         FD_SET(it->first, &m_Set);
         m_MaxFd = (m_MaxFd < it->first ? it->first : m_MaxFd);
         ++it;
@@ -177,7 +191,7 @@ int Server::RecvClient(ClientIter it)
     if (byte_num > 0)
     {
         /// handle recv data
-        byte_num = byte_num < BUFFER_SIZE ? byte_num : BUFFER_SIZE;
+        byte_num = byte_num < RECV_BUFFER_SIZE ? byte_num : RECV_BUFFER_SIZE;
         ILOG << "Receive " << byte_num << " bytes from fd " << it->first;
         time(&(it->second->lastTime));
         ret = DataPprocess(byte_num, it);
@@ -189,7 +203,7 @@ int Server::RecvClient(ClientIter it)
     }
     else
     {
-        WLOG << "Client fd " << it->first << " exit";
+        WLOG << "Client fd " << it->first << " out";
         ret = -1;
     }
     return ret;
@@ -199,7 +213,7 @@ int Server::DataPprocess(int DataLen, ClientIter it)
 {
     DataType_S *data = (DataType_S *)m_RecvBuf;
 
-    if(it->second->flag == 0)
+    if( 0 == it->second->flag )
     {
         if(data->src_id == data->dest_id)
         {
@@ -221,11 +235,11 @@ int Server::DataPprocess(int DataLen, ClientIter it)
         if(data->src_id == data->dest_id)
         {
             ILOG << "Recognition bag from 0x" << hex << (int)data->src_id;
-            return WriteTo(it->first, m_RecvBuf, DataLen);
+            return 0;
         }
         else
         {
-            ILOG << "Recv data from 0x" << hex << (int)data->src_id << "to 0x" << hex << (int)data->dest_id;
+            ILOG << "Recv data from 0x" << hex << (int)data->src_id << " to 0x" << hex << (int)data->dest_id;
             return WriteTo(GetClientFd(data->dest_id), m_RecvBuf, DataLen);
         }
     }
@@ -241,4 +255,10 @@ int Server::WriteTo(int fd, char *data, int len)
         return 0;
     }
     return ret;
+}
+
+int main(int argc, char *argv[])
+{
+    Server gate;
+    gate.Run();
 }

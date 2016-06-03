@@ -2,8 +2,9 @@
 #define __GATE_H__
 
 #include "Common.h"
+
 #define PROJECT_NAME "Gate"
-#define PROGRAM_VERSION "0.1"
+#define PROGRAM_VERSION "0.2"
 #define RECV_BUFFER_SIZE 1024
 
 typedef struct
@@ -14,9 +15,10 @@ typedef struct
 
 typedef std::map<int, Client_S *> ClientMap;
 typedef std::pair<int, Client_S *> ClientPair;
-typedef map<int, Client_S *>::iterator ClientIter;
+typedef std::map<int, Client_S *>::iterator ClientIter;
 
 using namespace std;
+
 class Server
 {
 public:
@@ -26,6 +28,7 @@ public:
 
 protected:
     bool Init(void);
+    void PrintVer(void);
     void SetupFDSet(void);
     void SetupClientMap(void);
     int GetClientFd(char flag);

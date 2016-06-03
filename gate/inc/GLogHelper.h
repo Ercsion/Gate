@@ -3,6 +3,12 @@
 
 #include "Common.h"
 
+#include "glog/logging.h"
+#include "glog/log_severity.h"
+#include "glog/raw_logging.h"
+#include "glog/stl_logging.h"
+#include "glog/vlog_is_on.h"
+
 #define ILOG LOG(INFO)
 #define WLOG LOG(WARNING)
 #define ELOG LOG(ERROR)
