@@ -14,16 +14,17 @@
 #define ELOG LOG(ERROR)
 #define FLOG LOG(FATAL)
 
-//å°†ä¿¡æ¯è¾“å‡ºåˆ°å•ç‹¬çš„æ–‡ä»¶å’Œ LOG(ERROR)
+//½«ĞÅÏ¢Êä³öµ½µ¥¶ÀµÄÎÄ¼şºÍ LOG(ERROR)
 void SignalHandle(const char *data, int size);
 
 class GLogHelper
 {
 public:
-    //GLOGé…ç½®ï¼š
+    //GLOGÅäÖÃ£º
     GLogHelper(char *program);
-    //GLOGå†…å­˜æ¸…ç†ï¼š
+    //GLOGÄÚ´æÇåÀí£º
     ~GLogHelper();
 };
 
 #endif /* __GLOGHELPER_H__ */
+

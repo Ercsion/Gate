@@ -3,8 +3,8 @@
 
 using namespace std;
 
-//static GLogHelper glog((char *)PROJECT_NAME);
-    
+
+
 Server::Server()
 {
     PrintVer();
@@ -106,17 +106,17 @@ int Server::Run(void)
             for(ClientIter it = m_ClientMap.begin(); it != m_ClientMap.end();)
             {
                 if (FD_ISSET(it->first, &m_Set))
-                    ret = RecvClient(it);
-
-                /// delete this client from map
-                if( -1 == ret )
-                {
-                    WLOG << "delete client 0x" << hex << (int)it->second->flag;
-                    FD_CLR(it->first, &m_Set);
-                    delete it->second;
-                    m_ClientMap.erase(it++);
-                    continue;
-                }
+            	{
+                	/// delete this client from map
+            		if( -1 == RecvClient(it) )
+		            {
+		                WLOG << "delete client 0x" << hex << (unsigned char)(it->second->flag+0)<<dec;
+		                FD_CLR(it->first, &m_Set);
+		                delete it->second;
+		                m_ClientMap.erase(it++);
+		                continue;
+		            }
+            	}
                 ++it;
             }
         }
@@ -188,7 +188,8 @@ int Server::RecvClient(ClientIter it)
     int ret = 0;
     bzero(m_RecvBuf, RECV_BUFFER_SIZE);
     long byte_num = recv(it->first, m_RecvBuf, RECV_BUFFER_SIZE, 0);
-    if (byte_num > 0)
+
+    if (byte_num >= (int)sizeof(DataType_S)+2)
     {
         /// handle recv data
         byte_num = byte_num < RECV_BUFFER_SIZE ? byte_num : RECV_BUFFER_SIZE;
@@ -196,15 +197,20 @@ int Server::RecvClient(ClientIter it)
         time(&(it->second->lastTime));
         ret = DataPprocess(byte_num, it);
     }
-    else if(byte_num < 0)
+    else if(byte_num > 0)
     {
-        PLOG(ERROR) << "Receive error from fd " << it->first;
+        WLOG << "recv from fd " << it->first << " lase then min min bag length";
         ret = 0;
     }
-    else
+    else if(0 == byte_num)
     {
         WLOG << "Client fd " << it->first << " out";
         ret = -1;
+    }
+    else
+    {
+        PLOG(ERROR) << "Receive error from fd " << it->first;
+        ret = 0;
     }
     return ret;
 }
@@ -219,13 +225,13 @@ int Server::DataPprocess(int DataLen, ClientIter it)
         {
             if(0 != GetClientFd(data->src_id))
             {
-                WLOG << "Get repeat client flag 0x" << hex << (int)data->src_id << ",delete this client now.";
+                WLOG << "Get repeat client flag 0x" << hex << (unsigned char)0+data->src_id << ",delete this client now."<<dec;
                 return -1;
             }
             else
             {
                 it->second->flag = data->src_id;
-                ILOG << "First recognition bag from 0x" << hex << (int)data->src_id;
+                ILOG << "First recognition bag from 0x" << hex << (unsigned char)0+data->src_id<<dec;
                 return WriteTo(it->first, m_RecvBuf, DataLen);
             }
         }
@@ -234,13 +240,28 @@ int Server::DataPprocess(int DataLen, ClientIter it)
     {
         if(data->src_id == data->dest_id)
         {
-            ILOG << "Recognition bag from 0x" << hex << (int)data->src_id;
+            ILOG << "Recognition bag from 0x" << hex << (unsigned char)data->src_id+0<<dec;
             return 0;
         }
+		else if(0xFF == data->src_id)
+		{
+			for(ClientIter it = m_ClientMap.begin(); it != m_ClientMap.end();)
+			{
+				WriteTo(it->first,m_RecvBuf,DataLen);
+				++it;
+			}
+			return DataLen;
+		}
         else
         {
-            ILOG << "Recv data from 0x" << hex << (int)data->src_id << " to 0x" << hex << (int)data->dest_id;
-            return WriteTo(GetClientFd(data->dest_id), m_RecvBuf, DataLen);
+            ILOG << "Recv data from 0x" <<hex<<(unsigned char)data->src_id+0 << " to 0x" << hex <<(unsigned char)data->dest_id+0<<dec;
+			int dest_fd = GetClientFd(data->dest_id);
+			if(dest_fd <= 2)
+			{
+				WLOG<<"Can't found client 0x"<<hex<<(unsigned char)data->dest_id+0<<dec;
+				return 0;
+			}
+			return WriteTo(dest_fd, m_RecvBuf, DataLen);
         }
     }
     return 0;
@@ -256,9 +277,10 @@ int Server::WriteTo(int fd, char *data, int len)
     }
     return ret;
 }
-
 int main(int argc, char *argv[])
 {
+	static GLogHelper glog((char *)PROJECT_NAME);
+
     Server gate;
     gate.Run();
 }

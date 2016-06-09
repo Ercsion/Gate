@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include "GLogHelper.h"
 
-//é…ç½®è¾“å‡ºæ—¥å¿—çš„ç›®å½•ï¼š
+//ÅäÖÃÊä³öÈÕÖ¾µÄÄ¿Â¼£º
 #define LOGDIR "log"
 #define MKDIR "mkdir -p "LOGDIR
 
-//å°†ä¿¡æ¯è¾“å‡ºåˆ°å•ç‹¬çš„æ–‡ä»¶å’Œ LOG(ERROR)
+//½«ĞÅÏ¢Êä³öµ½µ¥¶ÀµÄÎÄ¼şºÍ LOG(ERROR)
 void SignalHandle(const char *data, int size)
 {
     std::string str = std::string(data, size);
@@ -15,33 +15,33 @@ void SignalHandle(const char *data, int size)
     fs.close();
     */
     LOG(ERROR) << str;
-    /*ä¹Ÿå¯ä»¥ç›´æ¥åœ¨è¿™é‡Œå‘é€é‚®ä»¶æˆ–çŸ­ä¿¡é€šçŸ¥ï¼Œä¸è¿‡è¿™ä¸ªæ–¹æ³•æ˜¯è¢«å›è°ƒå¤šæ¬¡çš„ï¼ˆæ¯æ¬¡å›è°ƒåªè¾“å‡ºä¸€è¡Œé”™è¯¯ä¿¡æ¯ï¼Œæ‰€ä»¥å¦‚ä¸Šé¢çš„è®°å½•åˆ°æ–‡ä»¶ï¼Œä¹Ÿéœ€è¦>ä»¥è¿½åŠ æ¨¡å¼æ–¹å¯ï¼‰ï¼Œæ‰€ä»¥è¿™é‡Œå‘é‚®ä»¶æˆ–çŸ­ä¿¡ä¸æ˜¯å¾ˆé€‚åˆï¼Œä¸è¿‡å€’æ˜¯å¯ä»¥è°ƒç”¨ä¸€ä¸ª SHELL æˆ– PYTHON è„šæœ¬ï¼Œè€Œæ­¤è„šæœ¬ä¼šå…ˆ sleep 3ç§’å·¦å³ï¼Œç„¶åå°†é”™
-    è¯¯ä¿¡æ¯é€šè¿‡é‚®ä»¶æˆ–çŸ­ä¿¡å‘é€å‡ºå»ï¼Œè¿™æ ·å°±ä¸éœ€è¦ç›‘æ§è„šæœ¬å®šæ—¶é«˜é¢‘ç‡æ‰§è¡Œï¼Œæµªè´¹æ•ˆç‡äº†ã€‚*/
+    /*Ò²¿ÉÒÔÖ±½ÓÔÚÕâÀï·¢ËÍÓÊ¼ş»ò¶ÌĞÅÍ¨Öª£¬²»¹ıÕâ¸ö·½·¨ÊÇ±»»Øµ÷¶à´ÎµÄ£¨Ã¿´Î»Øµ÷Ö»Êä³öÒ»ĞĞ´íÎóĞÅÏ¢£¬ËùÒÔÈçÉÏÃæµÄ¼ÇÂ¼µ½ÎÄ¼ş£¬Ò²ĞèÒª>ÒÔ×·¼ÓÄ£Ê½·½¿É£©£¬ËùÒÔÕâÀï·¢ÓÊ¼ş»ò¶ÌĞÅ²»ÊÇºÜÊÊºÏ£¬²»¹ıµ¹ÊÇ¿ÉÒÔµ÷ÓÃÒ»¸ö SHELL »ò PYTHON ½Å±¾£¬¶ø´Ë½Å±¾»áÏÈ sleep 3Ãë×óÓÒ£¬È»ºó½«´í
+    ÎóĞÅÏ¢Í¨¹ıÓÊ¼ş»ò¶ÌĞÅ·¢ËÍ³öÈ¥£¬ÕâÑù¾Í²»ĞèÒª¼à¿Ø½Å±¾¶¨Ê±¸ßÆµÂÊÖ´ĞĞ£¬ÀË·ÑĞ§ÂÊÁË¡£*/
 }
 
-//GLOGé…ç½®ï¼š
+//GLOGÅäÖÃ£º
 GLogHelper::GLogHelper(char *program)
 {
     system(MKDIR);
-    google::InitGoogleLogging(program);
-    FLAGS_stderrthreshold = google::INFO; //è®¾ç½®çº§åˆ«é«˜äº google::INFO çš„æ—¥å¿—åŒæ—¶è¾“å‡ºåˆ°å±å¹•
-    FLAGS_colorlogtostderr = true;  //è®¾ç½®è¾“å‡ºåˆ°å±å¹•çš„æ—¥å¿—æ˜¾ç¤ºç›¸åº”é¢œè‰²
-    //FLAGS_logtominservity = true;  //è®¾ç½®å°†æ‰€æœ‰logè¾“å‡ºåˆ°æœ€é«˜çº§LOGæ–‡ä»¶ä¸­
+    FLAGS_stderrthreshold = google::INFO; //ÉèÖÃ¼¶±ğ¸ßÓÚ google::INFO µÄÈÕÖ¾Í¬Ê±Êä³öµ½ÆÁÄ»
+    FLAGS_colorlogtostderr = true;  //ÉèÖÃÊä³öµ½ÆÁÄ»µÄÈÕÖ¾ÏÔÊ¾ÏàÓ¦ÑÕÉ«
+    //FLAGS_logtominservity = true;  //ÉèÖÃ½«ËùÓĞlogÊä³öµ½×î¸ß¼¶LOGÎÄ¼şÖĞ
     FLAGS_v = 3;
-    //ä¹Ÿå¯ä½¿ç”¨ç³»ç»Ÿç¯å¢ƒå˜é‡GOOGLE_LOG_DIRæ§åˆ¶logæ ¹ç›®å½•
-    FLAGS_log_dir = "/home/ubuntu/workspace/log";
-    google::SetLogDestination(google::INFO,    LOGDIR"/INF_");  //è®¾ç½® google::INFO çº§åˆ«çš„æ—¥å¿—å­˜å‚¨è·¯å¾„å’Œæ–‡ä»¶åå‰ç¼€
-    google::SetLogDestination(google::WARNING, LOGDIR"/WAR_");  //è®¾ç½® google::WARNING çº§åˆ«çš„æ—¥å¿—å­˜å‚¨è·¯å¾„å’Œæ–‡ä»¶åå‰ç¼€
-    google::SetLogDestination(google::ERROR,   LOGDIR"/ERR_");  //è®¾ç½® google::ERROR çº§åˆ«çš„æ—¥å¿—å­˜å‚¨è·¯å¾„å’Œæ–‡ä»¶åå‰ç¼€
-    google::SetLogDestination(google::FATAL,   LOGDIR"/FAT_");  //è®¾ç½® google::FATAL çº§åˆ«çš„æ—¥å¿—å­˜å‚¨è·¯å¾„å’Œæ–‡ä»¶åå‰ç¼€
-    FLAGS_logbufsecs = 0;       //ç¼“å†²æ—¥å¿—è¾“å‡ºï¼Œé»˜è®¤ä¸º30ç§’ï¼Œæ­¤å¤„æ”¹ä¸ºç«‹å³è¾“å‡º
-    FLAGS_max_log_size = 100; //æœ€å¤§æ—¥å¿—å¤§å°ä¸º 100MB
-    FLAGS_stop_logging_if_full_disk = true;     //å½“ç£ç›˜è¢«å†™æ»¡æ—¶ï¼Œåœæ­¢æ—¥å¿—è¾“å‡º
-    google::SetLogFilenameExtension("pc");     //è®¾ç½®æ–‡ä»¶åæ‰©å±•ï¼Œå¦‚å¹³å°ï¼Ÿæˆ–å…¶å®ƒéœ€è¦åŒºåˆ†çš„ä¿¡æ¯
-    google::InstallFailureSignalHandler();      //æ•æ‰ core dumped
-    google::InstallFailureWriter(&SignalHandle);    //é»˜è®¤æ•æ‰ SIGSEGV ä¿¡å·ä¿¡æ¯è¾“å‡ºä¼šè¾“å‡ºåˆ° stderrï¼Œå¯ä»¥é€šè¿‡ä¸‹é¢çš„æ–¹æ³•è‡ªå®šä¹‰è¾“å‡º>æ–¹å¼ï¼š
+    //Ò²¿ÉÊ¹ÓÃÏµÍ³»·¾³±äÁ¿GOOGLE_LOG_DIR¿ØÖÆlog¸ùÄ¿Â¼
+    FLAGS_log_dir = "/mnt/nand/log/";
+    google::SetLogDestination(google::INFO,    LOGDIR"/INF_");  //ÉèÖÃ google::INFO ¼¶±ğµÄÈÕÖ¾´æ´¢Â·¾¶ºÍÎÄ¼şÃûÇ°×º
+    google::SetLogDestination(google::WARNING, LOGDIR"/WAR_");  //ÉèÖÃ google::WARNING ¼¶±ğµÄÈÕÖ¾´æ´¢Â·¾¶ºÍÎÄ¼şÃûÇ°×º
+    google::SetLogDestination(google::ERROR,   LOGDIR"/ERR_");  //ÉèÖÃ google::ERROR ¼¶±ğµÄÈÕÖ¾´æ´¢Â·¾¶ºÍÎÄ¼şÃûÇ°×º
+    google::SetLogDestination(google::FATAL,   LOGDIR"/FAT_");  //ÉèÖÃ google::FATAL ¼¶±ğµÄÈÕÖ¾´æ´¢Â·¾¶ºÍÎÄ¼şÃûÇ°×º
+    FLAGS_logbufsecs = 0;       //»º³åÈÕÖ¾Êä³ö£¬Ä¬ÈÏÎª30Ãë£¬´Ë´¦¸ÄÎªÁ¢¼´Êä³ö
+    FLAGS_max_log_size = 100; //×î´óÈÕÖ¾´óĞ¡Îª 100MB
+    FLAGS_stop_logging_if_full_disk = true;     //µ±´ÅÅÌ±»Ğ´ÂúÊ±£¬Í£Ö¹ÈÕÖ¾Êä³ö
+	google::InitGoogleLogging(program);
+    google::SetLogFilenameExtension("pc");     //ÉèÖÃÎÄ¼şÃûÀ©Õ¹£¬ÈçÆ½Ì¨£¿»òÆäËüĞèÒªÇø·ÖµÄĞÅÏ¢
+    google::InstallFailureSignalHandler();      //²¶×½ core dumped
+    google::InstallFailureWriter(&SignalHandle);    //Ä¬ÈÏ²¶×½ SIGSEGV ĞÅºÅĞÅÏ¢Êä³ö»áÊä³öµ½ stderr£¬¿ÉÒÔÍ¨¹ıÏÂÃæµÄ·½·¨×Ô¶¨ÒåÊä³ö>·½Ê½£º
 }
-//GLOGå†…å­˜æ¸…ç†ï¼š
+//GLOGÄÚ´æÇåÀí£º
 GLogHelper::~GLogHelper()
 {
     google::ShutdownGoogleLogging();

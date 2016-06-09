@@ -2,8 +2,7 @@
 #define __CLIENT_H__
 
 #include "Common.h"
-#include "GLogHelper.h"
-#include "DataBuf.h"
+#include "RecBuf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,18 +15,18 @@ extern "C" {
 #define FLAG_CONNECTTED 0X04 //connected
 
 #define TIME_OUT 3
-
 #define RECV_BUFFER_SIZE 1024
+#define CLIENT_VERSION "0.1"
 
 using namespace std;
 
 class Client
 {
-    
+
 public:
     Client(char ID);
     ~Client();
-    int OnWrite(char dest_id, char* buf, int len);
+    int OnWrite(char dest, char* buf, int len);
     int OnRead(char* buf, int len);
 
 protected:
@@ -38,7 +37,7 @@ protected:
     char          m_Flag;         /// this client flag
     int           m_ServerFd;     /// server fd
     int           m_ConnectFlag;  /// connect flag
-    DataBuf*      m_DataBuf;
+    RecBuf*       m_DataBuf;
     pthread_t     m_Tid;          /// pthrea id
     fd_set        m_Set;          /// server and client set
     time_t        m_LastTime;     /// time of recognition
@@ -46,8 +45,9 @@ protected:
 
 };
 
-#ifdef __cplusplus  
-}  
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* __CLIENT_H__ */
+

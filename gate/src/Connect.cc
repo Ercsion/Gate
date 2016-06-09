@@ -32,11 +32,13 @@ int SendTo(char dest_id, char* buf, int len)
     return __client__->OnWrite(dest_id,buf,len);
 }
 int GetMsg(char* buf, int len)
-{    
+{
     if(NULL == __client__ )
         return -1;
     return __client__->OnRead(buf, len);
 }
+
 #ifdef __cplusplus
 }
 #endif
+

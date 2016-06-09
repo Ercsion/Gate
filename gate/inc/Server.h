@@ -4,7 +4,7 @@
 #include "Common.h"
 
 #define PROJECT_NAME "Gate"
-#define PROGRAM_VERSION "0.2"
+#define PROGRAM_VERSION "2.1"
 #define RECV_BUFFER_SIZE 1024
 
 typedef struct
