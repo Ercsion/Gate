@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define DEFAULT_BUF_LEN  54
+#define DEFAULT_BUF_LEN  4*1024
 
 //push error number
 #define PUSH_NULL_DATA_PUSHED -1 //PUSH¿ÕÊý¾Ý
