@@ -37,7 +37,7 @@
 #include "Crc.h"
 
 #ifdef PC
-#define GATE_SOCKET_PATH "/home/users/linux14/gate_sock"
+#define GATE_SOCKET_PATH "/opt/gate_sock"
 #else
 #define GATE_SOCKET_PATH "/root/gate_sock"
 #endif
@@ -55,8 +55,17 @@ typedef struct DataType
 
 #define TM_GATE_Print()\
     {\
-		printf("#[schedlu][%24s ][%-3d]", basename(__FILE__), __LINE__);\
+        time_t now = time((time_t*)NULL);\
+        struct tm* p = localtime(&now);\
+        struct timeval tv;\
+        gettimeofday(&tv, NULL);\
+        printf("DAT %02d/%02d/%02d %02d:%02d:%02d.%06d [%lu %24s %3d] ",\
+        p->tm_year%100,p->tm_mon+1,p->tm_mday,\
+        p->tm_hour,p->tm_min,p->tm_sec,\
+        (int)tv.tv_usec,\
+        syscall(SYS_gettid),basename(__FILE__), __LINE__);\
     }
+
 #define TM_GATE_Printf(format, ...)\
     {\
         TM_GATE_Print();\
@@ -66,7 +75,7 @@ typedef struct DataType
 #define TM_GATE_DPrintf(buf,len,format,...)\
 {\
     TM_GATE_Print();\
-    printf("   /---------------------------------[ ");\
+    printf("   /------------------[ ");\
     printf(format,##__VA_ARGS__);printf("\n");\
     TM_GATE_Print();printf("   |");\
     for (int i = 0; i < len; i++)\
@@ -80,7 +89,7 @@ typedef struct DataType
         }\
     }\
     printf("\n");\
-    TM_GATE_Printf("   \\---------------------------------[ length %3d ]--------------",len);\
+    TM_GATE_Printf("   \\------------------[ length %3d",len);\
 }
 
 

@@ -7,8 +7,6 @@ extern "C" {
 RecBuf::RecBuf()
 {
 	pthread_mutex_init (&m_Mutex, NULL);
-	m_BagHead = new char[HEAD_LEN];
-	memset(m_BagHead,'$',HEAD_LEN);
 	Create(DEFAULT_BUF_LEN);
 }
 
@@ -70,10 +68,11 @@ int RecBuf::PopData(char *buf, int len)
 	int bagLen = 0;
 	char tmp[sizeof(DataType_S)] = {'0'};
 	DataType_S *data = NULL;
+	int FindReadPtr = m_ReadPtr;
 
 	while( 0 < GetMaxReadSize() )
 	{
-		if( false == FindChar(m_BagHead[0], m_ReadPtr) )
+		if( false == FindFlag(FindReadPtr) && false == FindFlag(FindReadPtr))
 		{
 			if(!GetMaxWriteSize())
 				CirBuffer::ClearBuf();
@@ -82,6 +81,7 @@ int RecBuf::PopData(char *buf, int len)
 			return POP_NOT_FOUNDED_HEAD;
 		}
 
+		m_ReadPtr = FindReadPtr;
 		if ( false == ReadBinary(tmp, sizeof(DataType_S), false) )
 		{
 			pthread_mutex_unlock(&m_Mutex);
@@ -91,8 +91,9 @@ int RecBuf::PopData(char *buf, int len)
 		if( true == CompareHead(tmp) )
 		{
 			data = (DataType_S*)tmp;
+			memset(data->head,'$',HEAD_LEN);
 			bagLen = (data->len_h<<8) | (data->len_l);
-			if(0 < bagLen && bagLen < GetMaxReadSize())
+			if(0 > bagLen || bagLen > GetMaxReadSize())
 			{
 				pthread_mutex_unlock(&m_Mutex);
 				return POP_NOT_FOUNDED_ENDD;
@@ -161,7 +162,7 @@ bool RecBuf::PrintErrMsg(const char *userMsg, int errNu)
 			cout << userMsg << "in pop, receive buf is null." << endl;
 			break;
 		case POP_NULL_BUFFER_DATA: //缓存区为空
-			cout << userMsg << "in pop, buffer have no data." << endl;
+			//cout << userMsg << "in pop, buffer have no data." << endl;
 			break;
 		case POP_NOT_FOUNDED_HEAD: //没找到包头
 			cout << userMsg << "in pop, no bag head, abandon." << endl;

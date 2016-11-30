@@ -82,7 +82,7 @@ int Server::Run(void)
     do
     {
         tv.tv_sec = 0;
-        tv.tv_usec = 300;
+        tv.tv_usec = 1;
 
         /// setup server and clients fd
         SetupFDSet();
@@ -161,7 +161,6 @@ void Server::SetupFDSet(void)
             m_ClientMap.erase(it++);
             continue;
         }
-        //ILOG << "add " << it->first << " to SET";
         FD_SET(it->first, &m_Set);
         m_MaxFd = (m_MaxFd < it->first ? it->first : m_MaxFd);
         ++it;
@@ -215,72 +214,100 @@ int Server::RecvClient(ClientIter it)
     return ret;
 }
 
-int Server::DataPprocess(int DataLen, ClientIter it)
+int Server::DataPprocess(const int DataLen, ClientIter it)
 {
-    DataType_S *data = (DataType_S *)m_RecvBuf;
 
-    if( 0 == it->second->flag )
-    {
-        if(data->src_id == data->dest_id)
-        {
-            if(0 != GetClientFd(data->src_id))
-            {
-                WLOG<<"Get repeat client flag 0x"<<hex<<(data->src_id&0xFF)<<",delete this client now."<<dec;
-                return -1;
-            }
-            else
-            {
-                ILOG << "First recognition bag from 0x" << hex << (data->src_id&0xFF) <<dec;
-                it->second->flag = data->src_id;
-				if(sizeof(DataType_S)+2 != DataLen)
-				{
-					it->second->watchLen  = (DataLen-sizeof(DataType_S)-2)&0xFF;
-					it->second->watchFlag = new unsigned char[it->second->watchLen];
-                	ILOG << "with watch type len " << hex << (DataLen-sizeof(DataType_S)-2) <<dec;
-					memcpy(it->second->watchFlag,m_RecvBuf+sizeof(DataType_S),it->second->watchLen);
-				}
-                return WriteTo(it->first, m_RecvBuf, DataLen);
-            }
-        }
-    }
-    else if(it->second->flag == data->src_id)
-    {
-        if(data->src_id == data->dest_id)
-        {
-            ILOG << "Recognition bag from 0x" << hex << (data->src_id&0xFF) <<dec;
-            return 0;
-        }
-		else if(0xFF == data->dest_id)
+	char *buff = NULL;
+	int ret = m_ServerBuf.PushData(m_RecvBuf, DataLen);
+	if(ret <= 0 )
+	{
+		m_ServerBuf.PrintErrMsg(ret);
+		return ret;
+	}
+
+	buff = new char[DataLen];
+	if(buff == NULL)
+	{
+		WLOG<<"new buff error";
+		return -1;
+	}
+
+	while(ret > 1){
+		bzero(buff,DataLen);
+		ret = m_ServerBuf.PopData(buff, DataLen);
+	    DataType_S *data = (DataType_S *)buff;
+		if(ret < 0 )
 		{
-			ILOG<<"Broadcast bag from 0x"<<hex<<(data->src_id&0xFF);
-			for(ClientIter iter = m_ClientMap.begin(); iter!= m_ClientMap.end();)
-			{
-				if(iter->first != it->first)
-				{
-					WriteTo(iter->first,m_RecvBuf,DataLen);
-				}
-				++iter;
-			}
-			return DataLen;
+		    m_ServerBuf.PrintErrMsg(ret);
 		}
-        else
-        {
-            ILOG <<"From 0x"<<hex<<(data->src_id&0xFF)<<" to 0x"<<hex<<(data->dest_id&0xFF)<<dec;
-			int dest_fd = GetClientFd(data->dest_id&0xFF);
-			if(dest_fd <= 2)
+
+	    if( 0 == it->second->flag )
+	    {
+	        if(data->src_id == data->dest_id)
+	        {
+	            if(0 != GetClientFd(data->src_id))
+	            {
+	                WLOG<<"Get repeat client flag 0x"<<hex<<(data->src_id&0xFF)<<",delete this client now."<<dec;
+	                continue;
+	            }
+	            else
+	            {
+	                ILOG << "First recognition bag from 0x" << hex << (data->src_id&0xFF) <<dec;
+	                it->second->flag = data->src_id;
+					if(sizeof(DataType_S)+2 != DataLen)
+					{
+						it->second->watchLen  = (DataLen-sizeof(DataType_S)-2)&0xFF;
+						it->second->watchFlag = new unsigned char[it->second->watchLen];
+	                	ILOG << "with watch type len " << hex << (DataLen-sizeof(DataType_S)-2) <<dec;
+						memcpy(it->second->watchFlag,buff+sizeof(DataType_S),it->second->watchLen);
+					}
+	                WriteTo(it->first, buff, ret);
+					continue;
+	            }
+	        }
+	    }
+	    else if(it->second->flag == data->src_id)
+	    {
+	        if(data->src_id == data->dest_id)
+	        {
+	            ILOG << "Recognition bag from 0x" << hex << (data->src_id&0xFF) <<dec;
+	            continue;
+	        }
+			else if(0xFF == data->dest_id)
 			{
-				WriteWatchFlag(m_RecvBuf, DataLen);
-				return 0;
+				ILOG<<"Broadcast bag from 0x"<<hex<<(data->src_id&0xFF);
+				for(ClientIter iter = m_ClientMap.begin(); iter!= m_ClientMap.end();)
+				{
+					if(iter->first != it->first)
+					{
+						WriteTo(iter->first, buff, ret);
+					}
+					++iter;
+				}
+				continue;
 			}
-			return WriteTo(dest_fd, m_RecvBuf, DataLen);
-        }
-    }
-    return 0;
+	        else
+	        {
+	            ILOG <<"From 0x"<<hex<<(data->src_id&0xFF)<<" to 0x"<<hex<<(data->dest_id&0xFF)<<dec;
+				int dest_fd = GetClientFd(data->dest_id&0xFF);
+				if(dest_fd <= 2)
+				{
+					WriteWatchFlag(buff, ret);
+					continue;
+				}
+				WriteTo(dest_fd, buff, ret);
+				continue;
+	        }
+	    }
+	}
+	delete []buff;
+	buff = NULL;
+	return 0;
 }
 
-void Server::WriteWatchFlag(char *m_RecvBuf, int len)
+void Server::WriteWatchFlag(char *buff, int len)
 {
-    DataType_S *data = (DataType_S *)m_RecvBuf;
+    DataType_S *data = (DataType_S *)buff;
     for(ClientIter it = m_ClientMap.begin(); it != m_ClientMap.end();++it)
     {
 		if(0 == it->second->watchLen || NULL == it->second->watchFlag)
@@ -293,7 +320,7 @@ void Server::WriteWatchFlag(char *m_RecvBuf, int len)
 		{
 		    if(data->dest_id == it->second->watchFlag[i])
 		    {
-				send(it->first, m_RecvBuf, len, 0);
+				send(it->first, buff, len, 0);
 		    }
 		}
     }
@@ -302,6 +329,7 @@ void Server::WriteWatchFlag(char *m_RecvBuf, int len)
 int Server::WriteTo(int fd, char *data, int len)
 {
     int ret = send(fd, data, len, 0);
+
     if (-1 == ret )
     {
         PLOG(WARNING) << "send to fd(" << fd << ") error";
@@ -330,11 +358,9 @@ void CaptureAllSignal()
     	signal(i, SignalHander);
     }
 }
-
-static GLogHelper glog((char *)PROJECT_NAME);
-
 int main(int argc, char *argv[])
 {
+	static GLogHelper glog((char *)PROJECT_NAME);
     CaptureAllSignal();
 
     Server gate;

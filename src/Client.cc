@@ -211,7 +211,7 @@ int Client::OnWrite(char dest, char* buf, int len)
     char *buff = new char[dataLen];
     bzero(buff, dataLen);
     DataType_S* data = (DataType_S* )buff;
-    memset(data->head, '$', HEAD_LEN);
+    memset(data->head, '#', HEAD_LEN);
     data->len_h = dataLen>>8;
     data->len_l = dataLen&0xFF;
     data->dest_id = dest;

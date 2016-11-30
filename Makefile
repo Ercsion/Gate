@@ -6,14 +6,19 @@ SRC_DIR=./src
 GLOG_INC_DIR=$(INC_DIR)/glog
 
 #ÐÞ¸Ä±àÒëÆ÷
-ifneq ($(PLATFORM),PC)
-ARCH = arm-hisiv100nptl-linux-
-CFLAGS += -DARM
+ifeq ($(PLATFORM),HISI)
+	ARCH = arm-hisiv100nptl-linux-
+	CFLAGS += -DARM
+else ifeq ($(PLATFORM),PI)
+	ARCH = arm-bcm2708-linux-gnueabi-
+	CFLAGS += -DPI
+	LIB_DIR=./lib/pi
 else
-ARCH =
-CFLAGS += -DPC -Wno-unused-result
-LIB_DIR=./lib/pc
+	ARCH =
+	CFLAGS += -DPC -Wno-unused-result
+	LIB_DIR=./lib/pc
 endif
+
 CC=$(ARCH)gcc
 CPP=$(ARCH)g++
 AR=$(ARCH)ar
@@ -45,20 +50,25 @@ LIB_OBJS = $(OBJ_DIR)/CirBuffer.o \
 	$(OBJ_DIR)/Crc.o
 
 TAR_OBJS = $(OBJ_DIR)/Server.o \
+	$(OBJ_DIR)/CirBuffer.o \
+	$(OBJ_DIR)/RecBuf.o \
 	$(OBJ_DIR)/GLogHelper.o \
 	$(OBJ_DIR)/Crc.o
 
 all:  clean $(OBJS) $(TARGET) $(STATIC_LIB)
-	cp $(TARGET) ~/nfs
+	@cp $(TARGET) /opt/nfs/
 
 $(TARGET): $(TAR_OBJS)
-	$(CPP) $(CFLAGS) $(TAR_OBJS) -o $(TARGET) $(LDFLAGS)
+	@$(CPP) $(CFLAGS) $(TAR_OBJS) -o $(TARGET) $(LDFLAGS)
+	@echo "	LD" $(notdir $@)
 
 $(STATIC_LIB): $(LIB_OBJS)
-	$(AR) crus $@ $(LIB_OBJS)
+	@$(AR) crus $@ $(LIB_OBJS)
+	@echo "	AR" $(notdir $@)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
-	$(CPP) $(CFLAGS) -c $< -o $@
+	@$(CPP) $(CFLAGS) -c $< -o $@
+	@echo "	CC" $(notdir $@)
 
 clean:
-	-rm -f  $(TARGET) $(STATIC_LIB) $(OBJS)
+	-@rm -rf  $(TARGET) $(STATIC_LIB) $(OBJS)

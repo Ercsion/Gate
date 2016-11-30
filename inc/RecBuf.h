@@ -27,7 +27,6 @@ class RecBuf : public CirBuffer
 {
 
 protected:
-	char* m_BagHead;
 	pthread_mutex_t m_Mutex;
 
 public:

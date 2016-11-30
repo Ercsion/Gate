@@ -120,14 +120,14 @@ bool CirBuffer::PeekChar( int pos, char &ch )
     return false;
 }
 
-bool CirBuffer::FindChar( char lookFor, int &pos )
+bool CirBuffer::FindFlag( int &pos )
 {
     for( int i = 0; i < GetMaxReadSize(); i++ )
     {
         char ch;
         if( PeekChar( i, ch ) )
         {
-            if( ch == lookFor )
+            if( ch == '#'  || ch == '$')
             {
                 pos = i + m_ReadPtr;
                 return true;

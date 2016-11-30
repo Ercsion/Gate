@@ -24,7 +24,7 @@ public:
     virtual bool WriteBinary( char *buf, int len );
     virtual bool ReadBinary( char *buf, int len , bool flag );
     bool PeekChar( int pos, char &ch );
-    bool FindChar( char lookFor, int &pos );
+    bool FindFlag( int &pos );
     bool SetChar(char ch, int pos, int len);
     void ClearBuf();
 

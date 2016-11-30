@@ -21,7 +21,7 @@ unsigned short crc16(unsigned char *buf,  unsigned short len)
 			{
 				res = (crc16_tab[buf[i] ^ (res & 0xFF)] ^ (res / 0x100));
 			}
-			//res = (res >> 8) | (res << 8);
+			res = (res >> 8) | (res << 8);
 			return (res);
 		}
 	}

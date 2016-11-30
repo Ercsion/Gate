@@ -2,6 +2,7 @@
 #define __GATE_H__
 
 #include "Clicom.h"
+#include "RecBuf.h"
 
 #define PROJECT_NAME "Gate"
 #define PROGRAM_VERSION "2.2"
@@ -38,7 +39,7 @@ protected:
     void SetupClientMap(void);
     int  GetClientFd(unsigned char flag);
     int  RecvClient(ClientIter it);
-    int  DataPprocess(int DataLen, ClientIter it);
+    int  DataPprocess(const int DataLen, ClientIter it);
     void WriteWatchFlag(char *data, int len);
     int  WriteTo(int fd, char *data, int len);
 
@@ -48,6 +49,7 @@ protected:
     char  *m_RecvBuf;      /// message from client buffer
     bool   m_RunFlag;      /// server run flag
     fd_set m_Set;          /// server and clients set
+    RecBuf m_ServerBuf;
     ClientMap m_ClientMap;
 };
 

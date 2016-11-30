@@ -35,7 +35,7 @@ LDFLAGS += -lclient -lpthread
 #т╢нд╪Ч
 
 all: clean $(send) $(recv)
-	cp $(send) $(recv) ~/nfs
+	cp $(send) $(recv) /opt/nfs
 
 $(send): send.o
 	$(CPP) $(CFLAGS) send.o -o $(send) $(LDFLAGS)
