@@ -31,12 +31,12 @@ STATIC_LIB=libclient.a
 ifeq ($(DEBUG),ON)
 CFLAGS += -DDEBUG
 endif
-CFLAGS += -Wall -fPIC -g -O2 -fno-strict-aliasing
+CFLAGS += -Wall -fPIC -g -fno-strict-aliasing
 CFLAGS += -Wno-deprecated -Wno-unused-but-set-variable
 CFLAGS += -I$(INC_DIR)
 CFLAGS += -I$(GLOG_INC_DIR)
 
-LDFLAGS += -L$(LIB_DIR)
+LDFLAGS += $(addprefix -L,$(LIB_DIR))
 LDFLAGS += -lpthread -lglog
 
 #Ô´ÎÄ¼þ
@@ -55,7 +55,7 @@ TAR_OBJS = $(OBJ_DIR)/Server.o \
 	$(OBJ_DIR)/GLogHelper.o \
 	$(OBJ_DIR)/Crc.o
 
-all:  clean $(OBJS) $(TARGET) $(STATIC_LIB)
+all:  $(OBJS) $(TARGET) $(STATIC_LIB)
 	@cp $(TARGET) /opt/nfs/
 
 $(TARGET): $(TAR_OBJS)
@@ -71,4 +71,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 	@echo "	CC" $(notdir $@)
 
 clean:
-	-@rm -rf  $(TARGET) $(STATIC_LIB) $(OBJS)
+	-@rm -rf  $(TARGET) $(STATIC_LIB) $(OBJS) ./log ./gate_sock

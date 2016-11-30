@@ -10,6 +10,8 @@
 using namespace std;
 
 #define RECV_BUFFER_SIZE 1024
+#define IP "192.168.1.20"
+#define PORT 2345
 
 typedef struct
 {
@@ -34,16 +36,22 @@ public:
 
 protected:
     bool Init(void);
+    bool InitUnixSocket(void);
+    bool InitInetSocket(void);
     void PrintVer(void);
     void SetupFDSet(void);
     void SetupClientMap(void);
+    void AcceptCrawler(void);
     int  GetClientFd(unsigned char flag);
     int  RecvClient(ClientIter it);
     int  DataPprocess(const int DataLen, ClientIter it);
     void WriteWatchFlag(char *data, int len);
     int  WriteTo(int fd, char *data, int len);
+    int  WriteToCrawler(char *data, int len);
 
+    int    m_GateFd;       /// gate fd
     int    m_ServerFd;     /// server fd
+    int    m_CrawlerFd;    /// crawler fd
     int    m_OverTime;     /// over time of waiting for client
     int    m_MaxFd;        /// max of all client
     char  *m_RecvBuf;      /// message from client buffer
